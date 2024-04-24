@@ -5,6 +5,13 @@ import {PSCEngine} from "../../src/PSCEngine.sol";
 import {PeopleStableCoin} from "../../src/PeopleStableCoin.sol";
 import {ERC20Mock} from "../mocks/ERC20Mock.sol";
 
+// depositandMint
+// redeemAndBurn
+// depositCollateral
+// reedeemCollateral
+// mintPSC
+// burnPSC
+
 contract Handler is Test {
     PSCEngine psce;
     PeopleStableCoin psc;
@@ -70,8 +77,6 @@ contract Handler is Test {
         vm.prank(_userAddress);
         psce.mintToken(_userAddress, amountToMint);
     }
-
-    // function burnPsc()
 
     // helper function
     function get_collateralAddress(

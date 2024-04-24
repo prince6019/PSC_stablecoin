@@ -1,17 +1,26 @@
-## Foundry
+## Foundry Defi Stablecoin
 
-**Foundry is a blazing fast, portable and modular toolkit for Ethereum application development written in Rust.**
+**This project is meant to be a stablecoin where users can deposit WETH and WBTC in exchange for a token that is pegged to the USD.**
 
-Foundry consists of:
+## Getting Started
 
--   **Forge**: Ethereum testing framework (like Truffle, Hardhat and DappTools).
--   **Cast**: Swiss army knife for interacting with EVM smart contracts, sending transactions and getting chain data.
--   **Anvil**: Local Ethereum node, akin to Ganache, Hardhat Network.
--   **Chisel**: Fast, utilitarian, and verbose solidity REPL.
+### Requirements
 
-## Documentation
+**[git](https://git-scm.com/book/en/v2/Getting-Started-Installing-Git)**
 
-https://book.getfoundry.sh/
+- You'll know you did it right if you can run git --version and you see a response like git version x.x.x
+
+**[foundry](https://getfoundry.sh/)**
+
+- You'll know you did it right if you can run forge --version and you see a response like forge 0.2.0 (816e00b 2023-03-16T00:05:26.396218Z)
+
+## Quickstart
+
+```shell
+git clone https://github.com/prince6019/PSC_stablecoin.git
+cd PSC_stablecoin
+forge build
+```
 
 ## Usage
 
