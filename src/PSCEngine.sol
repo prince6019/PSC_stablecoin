@@ -15,6 +15,7 @@ contract PSCEngine is Ownable {
     error PSCEngine_TokenNotSupported();
     error PSCEngine_AmountTooLow();
     error PSCEngine_healthFactorBroken();
+    error PSCEngine_MintFailed();
 
     PeopleStableCoin private i_PeopleStableCoin;
 
@@ -99,7 +100,7 @@ contract PSCEngine is Ownable {
     ) public {
         if (s_pricefeeds[_collateralToken] == address(0))
             revert PSCEngine_TokenNotSupported();
-        // if (_collateral < 1e15) revert PSCEngine_AmountTooLow();
+        if (_collateral < 1e15) revert PSCEngine_AmountTooLow();
         s_userCollateral[msg.sender][_collateralToken] += _collateral;
         IERC20(_collateralToken).safeTransferFrom(
             msg.sender,
@@ -112,7 +113,8 @@ contract PSCEngine is Ownable {
     function mintToken(address _user, uint256 _amount) public {
         TokenMinted[_user] += _amount;
         if (HealthFactorBroken(_user)) revert PSCEngine_healthFactorBroken();
-        i_PeopleStableCoin.mint(_user, _amount);
+        bool isMinted = i_PeopleStableCoin.mint(_user, _amount);
+        if (!isMinted) revert PSCEngine_MintFailed();
         emit PSCMinted(_user, _amount);
     }
 
@@ -130,17 +132,13 @@ contract PSCEngine is Ownable {
         ) revert PSCEngine_AmountTooLow();
 
         s_userCollateral[_user][_collateralToken] -= _amonuntOfCollateralToken;
-        if (HealthFactorBroken(_user)) revert PSCEngine_healthFactorBroken();
-        IERC20(_collateralToken).safeTransferFrom(
-            address(this),
-            _user,
-            _amonuntOfCollateralToken
-        );
+        IERC20(_collateralToken).safeTransfer(_user, _amonuntOfCollateralToken);
         emit collateralRedeemed(
             _user,
             _collateralToken,
             _amonuntOfCollateralToken
         );
+        if (HealthFactorBroken(_user)) revert PSCEngine_healthFactorBroken();
     }
 
     function burnPSC(uint256 amountOfPSCToBurn, address _user) public {
@@ -150,7 +148,6 @@ contract PSCEngine is Ownable {
                 revert PSCEngine_healthFactorBroken();
         }
         i_PeopleStableCoin.burn(_user, amountOfPSCToBurn);
-        if (HealthFactorBroken(_user)) revert PSCEngine_healthFactorBroken();
         emit PSCBurnt(_user, amountOfPSCToBurn);
     }
 
@@ -172,6 +169,7 @@ contract PSCEngine is Ownable {
             uint256 UserCollateralInUsd,
             uint256 userPSCMinted
         ) = getUserAccountInfo(_user);
+        if (userPSCMinted == 0) return type(uint256).max;
         uint256 healthFactor = (UserCollateralInUsd * health_precision) /
             userPSCMinted;
         return healthFactor;

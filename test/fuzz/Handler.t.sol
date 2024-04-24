@@ -11,6 +11,7 @@ contract Handler is Test {
     ERC20Mock weth;
     ERC20Mock wbtc;
     uint96 public constant MAX_DEPOSIT_SIZE = type(uint96).max;
+    address[] collateralDepositedAddresses;
 
     constructor(address _psce, address _psc, address _weth, address _wbtc) {
         psce = PSCEngine(_psce);
@@ -19,33 +20,58 @@ contract Handler is Test {
         wbtc = ERC20Mock(_wbtc);
     }
 
-    function test_depositCollateral(
+    function depositCollateral(
         uint256 randomValue,
         uint256 _collateralAmount
     ) public {
         address _collateralAddress = get_collateralAddress(randomValue);
         uint256 collateralValue = bound(_collateralAmount, 1, MAX_DEPOSIT_SIZE);
+        if (collateralValue < 1e15) return;
         vm.startPrank(msg.sender);
         ERC20Mock(_collateralAddress).mint(msg.sender, collateralValue);
         ERC20Mock(_collateralAddress).approve(address(psce), collateralValue);
         psce.depositCollateral(_collateralAddress, collateralValue);
         vm.stopPrank();
+        collateralDepositedAddresses.push(msg.sender);
     }
 
-    function test_redeemCollateral(uint256 randomValue, uint256 amount) public {
+    function redeemCollateral(uint256 randomValue, uint256 amount) public {
         address _collateralAddress = get_collateralAddress(randomValue);
         uint256 maxCollateralValue = psce.getUserCollateral(
             msg.sender,
             _collateralAddress
         );
         if (maxCollateralValue == 0) return;
+
         uint256 collateralValue = bound(amount, 0, maxCollateralValue);
+        if (collateralValue == 0) {
+            return;
+        }
         vm.startPrank(msg.sender);
         psce.redeemCollateral(_collateralAddress, collateralValue, msg.sender);
         vm.stopPrank();
     }
 
-    function test_mintPsc() public {}
+    function mintPsc(uint256 randomValue, uint256 amountToMint) public {
+        if (collateralDepositedAddresses.length == 0) return;
+        address _userAddress = collateralDepositedAddresses[
+            randomValue % collateralDepositedAddresses.length
+        ];
+        (uint256 userCollateralInUsd, uint256 pscMinted) = psce
+            .getUserAccountInfo(_userAddress);
+        int256 maxPscMinted = (int256(userCollateralInUsd) * 100) /
+            150 -
+            int256(pscMinted);
+        if (maxPscMinted <= 0) {
+            return;
+        }
+        amountToMint = bound(amountToMint, 0, uint256(maxPscMinted));
+        if (amountToMint == 0) return;
+        vm.prank(_userAddress);
+        psce.mintToken(_userAddress, amountToMint);
+    }
+
+    // function burnPsc()
 
     // helper function
     function get_collateralAddress(

@@ -17,6 +17,7 @@ contract InvariantsTest is StdInvariant {
     PeopleStableCoin _peopleStableCoin;
     IERC20 weth;
     IERC20 wbtc;
+    Handler public handler;
 
     function setUp() public {
         deployer = new DeployPSC();
@@ -26,7 +27,7 @@ contract InvariantsTest is StdInvariant {
         weth = IERC20(_weth);
         wbtc = IERC20(_wbtc);
 
-        Handler handler = new Handler(
+        handler = new Handler(
             address(_pscEngine),
             address(_peopleStableCoin),
             _weth,
@@ -43,6 +44,16 @@ contract InvariantsTest is StdInvariant {
             wethBalance;
         uint256 wbtcValue = _pscEngine.getPriceFeed(address(wbtc)) *
             wbtcBalance;
+        console.log("wethValue", wethBalance);
+        console.log("wbtcValue", wbtcBalance);
+        console.log("totalSupply : ", totalCollateral);
+
         assert(wethValue + wbtcValue >= totalCollateral);
+    }
+
+    function invariant_getterShouldNeverRevert() public view {
+        _pscEngine.getHealthThreshold();
+        _pscEngine.getHealthPrecision();
+        _pscEngine.getPSC();
     }
 }

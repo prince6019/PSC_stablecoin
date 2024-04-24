@@ -29,6 +29,7 @@ contract DeployPSC is Script {
         PeopleStableCoin PSCoinContract = new PeopleStableCoin(
             address(PSContract)
         );
+        PSContract._initialize(address(PSCoinContract));
         vm.stopBroadcast();
 
         return (PSCoinContract, PSContract, helperConfig);

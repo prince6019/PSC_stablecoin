@@ -7,6 +7,7 @@ import {PSCEngine} from "../../src/PSCEngine.sol";
 import {PeopleStableCoin} from "../../src/PeopleStableCoin.sol";
 import {HelperConfig} from "../../script/HelperConfig.s.sol";
 import {ERC20Mock} from "../mocks/ERC20Mock.sol";
+import {MockV3Aggregator} from "../mocks/MockV3Aggregator.sol";
 
 contract PSCEngineTest is Test {
     address private constant USER_1 = address(2);
